@@ -1,42 +1,50 @@
-<<<<<<< HEAD
-﻿void PrintGradeReport(IEnumerable<IGradable> assessments)
-{
-    Console.WriteLine("--- Grade Report ---");
+var service = new EnrollmentService();
 
-    foreach (var item in assessments)
-    {
-        Console.WriteLine(
-            $"{item.Title}: {item.CalculateGrade():F2}%");
-    }
+// Test 1: Valid registration
+var validStudent = new Student
+{
+    Id = "S1",
+    Name = "Abeba",
+    Age = 20,
+    GPA = 3.8m
+};
+
+var validCourse = new Course
+{
+    Code = "CS-401",
+    Title = "Advanced C#",
+    Capacity = 30,
+    EnrolledCount = 0
+};
+
+var result = service.ProcessRegistration(validStudent, validCourse);
+
+Console.WriteLine($"Enrolled: {result.StudentId} in {result.CourseCode}");
+
+// Test 2: Null student
+try
+{
+    service.ProcessRegistration(null, validCourse);
+}
+catch (ArgumentNullException ex)
+{
+    Console.WriteLine($"Guard caught: {ex.ParamName}");
 }
 
-IGradable[] cohortAssessments =
-[
-    new Quiz
-    {
-        Title = "C# Basics",
-        CorrectAnswers = 18,
-        TotalQuestions = 20
-    },
-
-    new LabAssignment
-    {
-        Title = "Registration API",
-        FunctionalityScore = 90m,
-        CodeQualityScore = 85m
-    }
-];
-
-PrintGradeReport(cohortAssessments);
-=======
-﻿string? studentRegion = null;
-
-if (studentRegion is not null)
+// Test 3: Full course
+var fullCourse = new Course
 {
-    Console.WriteLine(studentRegion.ToUpper());
-}
-else
+    Code = "CS-402",
+    Title = "Full Course",
+    Capacity = 1,
+    EnrolledCount = 1
+};
+
+try
 {
-    Console.WriteLine("Region not provided");
+    service.ProcessRegistration(validStudent, fullCourse);
 }
->>>>>>> ef28e79b41225b4cf2f647f6f4a5d3be75656e46
+catch (InvalidOperationException ex)
+{
+    Console.WriteLine($"Business rule: {ex.Message}");
+}
