@@ -1,45 +1,51 @@
 ﻿
-using System.Diagnostics;
 
-Console.WriteLine("=== Exercise 6: Async vs Blocking Demo ===\n");
+var enrollService = new EnrollmentService();
 
-var sw = Stopwatch.StartNew();
-
-
-// 1. BLOCKING 
-
-for (int i = 0; i < 5; i++)
+// ===============================
+// TEST 1: Normal case
+// ===============================
+var course = new Course
 {
-    System.Threading.Thread.Sleep(300);
+    Code = "CS-101",
+    Title = "C# Basics",
+    Capacity = 1,
+    EnrolledCount = 0
+};
+
+var student = new Student
+{
+    Id = "S1",
+    Name = "Abeba",
+    Age = 20,
+    GPA = 3.8m
+};
+
+try
+{
+    var result = enrollService.ProcessRegistration(student, course);
+    course.EnrolledCount++;
+
+    Console.WriteLine($"Enrolled: {result.StudentId} in {result.CourseCode}");
+}
+catch (Exception ex)
+{
+    Console.WriteLine(ex.Message);
 }
 
-sw.Stop();
-Console.WriteLine($"Blocking sequential: {sw.ElapsedMilliseconds}ms");
-
-
-// 2. ASYNC SEQUENTIAL
-
-sw.Restart();
-
-for (int i = 0; i < 5; i++)
+// ===============================
+// TEST 2: Capacity exception
+// ===============================
+try
 {
-    await Task.Delay(300);
+    enrollService.ProcessRegistration(
+        new Student { Id = "S2", Name = "Test", Age = 20, GPA = 3.0m },
+        course
+    );
 }
-
-sw.Stop();
-Console.WriteLine($"Async sequential: {sw.ElapsedMilliseconds}ms");
-
-
-// 3. ASYNC PARALLEL (BEST)
-
-sw.Restart();
-
-var tasks = Enumerable.Range(0, 5)
-    .Select(_ => Task.Delay(300));
-
-await Task.WhenAll(tasks);
-
-sw.Stop();
-Console.WriteLine($"Async parallel: {sw.ElapsedMilliseconds}ms");
-
-Console.WriteLine("\n=== End of Exercise 6 ===");
+catch (CapacityReachedException ex)
+{
+    Console.WriteLine("\nDomain exception caught:");
+    Console.WriteLine($"Course: {ex.CourseCode}");
+    Console.WriteLine($"Message: {ex.Message}");
+}
